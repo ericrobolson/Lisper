@@ -8,6 +8,8 @@ pub const ESCAPE_CHARACTER: char = '\\';
 pub const QUOTE: char = '\"';
 pub const COMMENT: char = ';';
 pub const NEW_LINE: char = '\n';
+pub const TRUE: &'static str = "true";
+pub const FALSE: &'static str = "false";
 
 /// Represents a single token.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +21,7 @@ pub struct Token {
 /// Represents the particular kind of token.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
+    Bool(bool),
     Comment(String),
     Identifier(String),
     Number(f64),
@@ -33,12 +36,14 @@ impl TokenKind {
             TokenKind::String(_) => TokenType::String,
             TokenKind::Comment(_) => TokenType::Comment,
             TokenKind::Symbol(_) => TokenType::Symbol,
+            TokenKind::Bool(_) => TokenType::Bool,
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
+    Bool,
     Comment,
     Identifier,
     Number,
@@ -278,6 +283,15 @@ impl Tokenizer {
                     let contents = contents.trim();
 
                     let contents = contents.replace("\\\"", "\"");
+
+                    if contents == FALSE || contents == TRUE {
+                        self.tokens.push(Token {
+                            kind: TokenKind::Bool(contents == TRUE),
+                            location: start,
+                        });
+
+                        return Ok(());
+                    }
 
                     // Try to tokenize number
                     match contents.parse::<f64>() {

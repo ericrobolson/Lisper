@@ -23,9 +23,10 @@ pub struct Node {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ast {
-    List(Vec<Node>),
+    Bool(bool),
     Comment(String),
     Identifier(String),
+    List(Vec<Node>),
     Number(f64),
     String(String),
 }
@@ -78,7 +79,16 @@ impl Parser {
                 TokenKind::Symbol(')') => {
                     parser.end_list(token)?;
                 }
-                t => todo!("Parse token: {:#?}", t),
+                TokenKind::Symbol(s) => {
+                    todo!("Need to handle symbol '{s}'")
+                }
+                TokenKind::Bool(b) => {
+                    let node = Node {
+                        ast: Ast::Bool(*b),
+                        tokens: vec![token],
+                    };
+                    parser.add_node(node)?;
+                }
             }
         }
 
@@ -500,5 +510,20 @@ mod tests {
         };
 
         assert_eq!(expected, actual.unwrap_err());
+    }
+
+    #[test]
+    fn parse_returns_bool_true() {
+        let contents = "true";
+        let path: PathBuf = "derpy".into();
+        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+
+        let actual = Parser::parse(tokens.clone());
+        let expected = vec![Node {
+            ast: Ast::Bool(true),
+            tokens: vec![tokens[0].clone()],
+        }];
+
+        assert_eq!(expected, actual.unwrap());
     }
 }
