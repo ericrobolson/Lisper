@@ -3,8 +3,9 @@ mod location;
 mod parser;
 mod tokenizer;
 
-pub use location::Location;
-pub use parser::Node;
+pub use location::*;
+pub use parser::*;
+pub use tokenizer::*;
 
 /// Parse the given contents into a vec of nodes.
 pub fn parse<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<Node>, Error> {
