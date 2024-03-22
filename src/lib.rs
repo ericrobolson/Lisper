@@ -7,8 +7,20 @@ pub use location::*;
 pub use parser::*;
 pub use tokenizer::*;
 
-/// Parse the given contents into a vec of nodes.
-pub fn parse<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<Node>, Error> {
+/// Parses the given contents into a vec of nodes.
+pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<Node>, Error> {
+    parse_optional_path(contents, None)
+}
+
+/// Parse the given contents from a file into a vec of nodes.
+pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<Node>, Error> {
+    parse_optional_path(contents, Some(path))
+}
+
+fn parse_optional_path<'a>(
+    contents: &'a str,
+    path: Option<std::path::PathBuf>,
+) -> Result<Vec<Node>, Error> {
     let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
     let nodes = parser::Parser::parse(tokens)?;
 

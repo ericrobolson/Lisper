@@ -4,11 +4,11 @@ use std::path::PathBuf;
 pub struct Location {
     pub line: usize,
     pub column: usize,
-    pub path: PathBuf,
+    pub path: Option<PathBuf>,
 }
 
 impl Location {
-    pub fn new(path: PathBuf) -> Self {
+    pub fn new(path: Option<PathBuf>) -> Self {
         Self {
             line: 0,
             column: 0,

@@ -170,7 +170,7 @@ impl Parser {
         let current_location = if tokens.is_empty() == false {
             tokens[0].location.clone()
         } else {
-            Location::new("".into())
+            Location::new(None)
         };
 
         Self {
@@ -249,7 +249,7 @@ mod tests {
     fn parse_returns_empty_list() {
         let contents = "()";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -264,7 +264,7 @@ mod tests {
     fn parse_returns_single_nested_list() {
         let contents = "(())";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -285,7 +285,7 @@ mod tests {
             ;; Test 2
         )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -312,7 +312,7 @@ mod tests {
             3.14
         )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -336,7 +336,7 @@ mod tests {
     fn parse_returns_negative_number() {
         let contents = "-1.22";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -354,7 +354,7 @@ mod tests {
             3.14
         )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -381,7 +381,7 @@ mod tests {
             ;; Test 2
         )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -405,7 +405,7 @@ mod tests {
     fn parse_returns_double_nested_list() {
         let contents = "( () () )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -429,7 +429,7 @@ mod tests {
     fn parse_returns_triple_nested_list() {
         let contents = "( ( () ) () )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
@@ -456,7 +456,7 @@ mod tests {
     fn parse_returns_err_on_unclosed_list() {
         let contents = "(";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = error::Error {
@@ -471,7 +471,7 @@ mod tests {
     fn parse_returns_err_on_complex_unclosed_list() {
         let contents = "( ( ()  () )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = error::Error {
@@ -486,7 +486,7 @@ mod tests {
     fn parse_returns_err_on_second_complex_unclosed_list() {
         let contents = "( ()) (  ( )";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = error::Error {
@@ -501,7 +501,7 @@ mod tests {
     fn parse_returns_err_on_unstarted_list() {
         let contents = ")";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = error::Error {
@@ -516,7 +516,7 @@ mod tests {
     fn parse_returns_bool_true() {
         let contents = "true";
         let path: PathBuf = "derpy".into();
-        let tokens = Tokenizer::tokenize(contents, path).unwrap();
+        let tokens = Tokenizer::tokenize(contents, Some(path)).unwrap();
 
         let actual = Parser::parse(tokens.clone());
         let expected = vec![Node {
