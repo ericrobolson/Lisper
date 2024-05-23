@@ -5,7 +5,7 @@ mod parser;
 mod tokenizer;
 
 pub use location::*;
-use node::Node;
+pub use node::*;
 pub use tokenizer::*;
 
 /// Parses the given contents into a vec of nodes.
