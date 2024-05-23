@@ -1,3 +1,5 @@
+use crate::node::{Ast, Node};
+
 use super::error;
 use super::location::Location;
 use super::tokenizer::{Token, TokenKind};
@@ -13,22 +15,6 @@ pub enum ParserErr {
 pub enum ListErr {
     UnclosedList,
     UnstartedList,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Node {
-    pub ast: Ast,
-    pub tokens: Vec<Token>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Ast {
-    Bool(bool),
-    Comment(String),
-    Identifier(String),
-    List(Vec<Node>),
-    Number(f64),
-    String(String),
 }
 
 /// A structure for parsing.

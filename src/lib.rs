@@ -1,10 +1,11 @@
 mod error;
 mod location;
+mod node;
 mod parser;
 mod tokenizer;
 
 pub use location::*;
-pub use parser::*;
+use node::Node;
 pub use tokenizer::*;
 
 /// Parses the given contents into a vec of nodes.

@@ -6,6 +6,15 @@ pub struct Location {
     pub column: usize,
     pub path: Option<PathBuf>,
 }
+impl Default for Location {
+    fn default() -> Self {
+        Self {
+            line: 0,
+            column: 0,
+            path: None,
+        }
+    }
+}
 
 impl Location {
     pub fn new(path: Option<PathBuf>) -> Self {
