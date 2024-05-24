@@ -1,7 +1,7 @@
 use crate::{Location, Token};
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Error {
+pub enum NodeError {
     InvalidType {
         expected: AstType,
         got: AstType,
@@ -55,10 +55,10 @@ impl Node {
         }
     }
 
-    pub fn as_bool(&self) -> Result<bool, Error> {
+    pub fn as_bool(&self) -> Result<bool, NodeError> {
         match &self.ast {
             Ast::Bool(value) => Ok(*value),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::Bool,
                 got: value.type_(),
                 location: self.first_location(),
@@ -66,10 +66,10 @@ impl Node {
         }
     }
 
-    pub fn as_comment(&self) -> Result<String, Error> {
+    pub fn as_comment(&self) -> Result<String, NodeError> {
         match &self.ast {
             Ast::Comment(value) => Ok(value.clone()),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::Comment,
                 got: value.type_(),
                 location: self.first_location(),
@@ -77,10 +77,10 @@ impl Node {
         }
     }
 
-    pub fn as_identifier(&self) -> Result<String, Error> {
+    pub fn as_identifier(&self) -> Result<String, NodeError> {
         match &self.ast {
             Ast::Identifier(value) => Ok(value.clone()),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::Identifier,
                 got: value.type_(),
                 location: self.first_location(),
@@ -88,10 +88,10 @@ impl Node {
         }
     }
 
-    pub fn as_list(&self) -> Result<Vec<Node>, Error> {
+    pub fn as_list(&self) -> Result<Vec<Node>, NodeError> {
         match &self.ast {
             Ast::List(nodes) => Ok(nodes.clone()),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::List,
                 got: value.type_(),
                 location: self.first_location(),
@@ -99,10 +99,10 @@ impl Node {
         }
     }
 
-    pub fn as_number(&self) -> Result<f64, Error> {
+    pub fn as_number(&self) -> Result<f64, NodeError> {
         match &self.ast {
             Ast::Number(value) => Ok(*value),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::Number,
                 got: value.type_(),
                 location: self.first_location(),
@@ -110,10 +110,10 @@ impl Node {
         }
     }
 
-    pub fn as_string(&self) -> Result<String, Error> {
+    pub fn as_string(&self) -> Result<String, NodeError> {
         match &self.ast {
             Ast::String(value) => Ok(value.clone()),
-            value => Err(Error::InvalidType {
+            value => Err(NodeError::InvalidType {
                 expected: AstType::String,
                 got: value.type_(),
                 location: self.first_location(),
