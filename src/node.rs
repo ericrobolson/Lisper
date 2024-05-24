@@ -47,7 +47,7 @@ pub struct Node {
     pub tokens: Vec<Token>,
 }
 impl Node {
-    fn first_location(&self) -> Location {
+    pub fn first_location(&self) -> Location {
         if self.tokens.is_empty() {
             Location::default()
         } else {
