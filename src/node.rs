@@ -7,6 +7,11 @@ pub enum NodeError {
         got: AstType,
         location: Location,
     },
+    InvalidLength {
+        expected: usize,
+        got: usize,
+        location: Location,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,6 +57,19 @@ impl Node {
             Location::default()
         } else {
             self.tokens[0].location.clone()
+        }
+    }
+
+    pub fn assert_length(&self, expected: usize) -> Result<(), NodeError> {
+        let l = self.as_list()?;
+        if l.len() != expected {
+            return Err(NodeError::InvalidLength {
+                expected,
+                got: l.len(),
+                location: self.first_location(),
+            });
+        } else {
+            return Ok(());
         }
     }
 
