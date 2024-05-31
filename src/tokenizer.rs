@@ -144,6 +144,7 @@ impl Tokenizer {
                 }));
             } else if is_terminal_character {
                 if is_whitespace && tokenizer.state_stack.is_empty() {
+
                     // do nothing
                 } else {
                     let mut skip_symbol = false;
@@ -343,8 +344,6 @@ impl Tokenizer {
         match self.state_stack.pop() {
             Some(state) => match state {
                 State::String(StringState { start, contents }) => {
-                    let contents = contents.trim();
-
                     let contents = contents.replace("\\\"", "\"");
 
                     self.tokens.push(Token {
@@ -727,6 +726,32 @@ mod tests {
         assert_eq!(Ok(()), tokenizer.make_string());
         let expected = vec![Token {
             kind: TokenKind::String("jajajaja".into()),
+            location: Location {
+                line: 1,
+                column: 0,
+                path: Some(path),
+            },
+        }];
+
+        assert_eq!(expected, tokenizer.tokens)
+    }
+
+    #[test]
+    fn make_string_creates_string_with_whitespace() {
+        let contents = " \"jajajaja    \"    ";
+        let path = PathBuf::from("wutup");
+        let mut tokenizer = Tokenizer::load(contents, Some(path.clone()));
+
+        let state = State::String(StringState {
+            start: tokenizer.location.clone(),
+            contents: "jajajaja    ".into(),
+        });
+
+        tokenizer.state_stack.push(state);
+
+        assert_eq!(Ok(()), tokenizer.make_string());
+        let expected = vec![Token {
+            kind: TokenKind::String("jajajaja    ".into()),
             location: Location {
                 line: 1,
                 column: 0,
