@@ -1,7 +1,10 @@
 use super::location::Location;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Error<Kind> {
+pub struct Error<Kind>
+where
+    Kind: ToString,
+{
     pub kind: Kind,
     pub location: Location,
 }

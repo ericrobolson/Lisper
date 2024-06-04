@@ -60,6 +60,22 @@ pub enum TokenErr {
     Identifier(IdentifierErr),
     StackUnderflow,
 }
+impl ToString for TokenErr {
+    fn to_string(&self) -> String {
+        match self {
+            TokenErr::Comment(err) => match err {
+                CommentErr::NotStarted => "Comment error: Not started".into(),
+            },
+            TokenErr::String(err) => match err {
+                StringErr::NotStarted => "String error: Not started".into(),
+                StringErr::Unclosed(state) => format!("String error: Unclosed {:?}", state),
+            },
+            TokenErr::Type(err) => format!("Type error: {:?}", err),
+            TokenErr::Identifier(err) => format!("Identifier error: {:?}", err),
+            TokenErr::StackUnderflow => "Stack underflow".into(),
+        }
+    }
+}
 
 /// An error that occured for a comment.
 #[derive(Debug, Clone, PartialEq)]

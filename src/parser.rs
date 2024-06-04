@@ -11,10 +11,26 @@ pub enum ParserErr {
     List(ListErr),
     StackUnderflow,
 }
+impl ToString for ParserErr {
+    fn to_string(&self) -> String {
+        match self {
+            Self::List(list_err) => list_err.to_string(),
+            Self::StackUnderflow => "Stack underflow".into(),
+        }
+    }
+}
 #[derive(Debug, Clone, PartialEq)]
 pub enum ListErr {
     UnclosedList,
     UnstartedList,
+}
+impl ToString for ListErr {
+    fn to_string(&self) -> String {
+        match self {
+            Self::UnclosedList => "Unclosed list".into(),
+            Self::UnstartedList => "Unstarted list".into(),
+        }
+    }
 }
 
 /// A structure for parsing.
