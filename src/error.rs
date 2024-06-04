@@ -9,7 +9,10 @@ where
     pub location: Location,
 }
 
-impl ToString for Error<String> {
+impl<Kind> ToString for Error<Kind>
+where
+    Kind: ToString,
+{
     fn to_string(&self) -> String {
         let loc_error = match self.location.path {
             Some(ref path) => format!(
@@ -20,6 +23,6 @@ impl ToString for Error<String> {
             ),
             None => format!("{}:{}", self.location.line, self.location.column),
         };
-        format!("{}: {}", loc_error, self.kind)
+        format!("{}: {}", loc_error, self.kind.to_string())
     }
 }

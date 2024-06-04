@@ -34,6 +34,14 @@ pub enum Error {
     Tokenizer(tokenizer::Err),
     Parser(parser::Err),
 }
+impl ToString for Error {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Tokenizer(err) => err.clone().to_string(),
+            Self::Parser(err) => err.clone().to_string(),
+        }
+    }
+}
 
 impl From<parser::Err> for Error {
     fn from(err: parser::Err) -> Self {
