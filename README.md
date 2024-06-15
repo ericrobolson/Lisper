@@ -11,9 +11,6 @@
 let contents = "(def (add-multiply a b c)
     (* c (+ a b)))";
 
-let nodes = lisper::parse(contents, path)?;
-
-let list = nodes.as_list();
-let def = list.get(0).unwrap().as_identifier();
-
+let nodes = lisper::parse_str(contents)?;
+let nodes = lisper::parse_file(contents, path)?;
 ```

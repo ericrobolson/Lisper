@@ -488,13 +488,13 @@ pub struct CommentState {
 #[derive(Clone, Debug, PartialEq)]
 pub struct IdentifierState {
     start: Location,
-    contents: String,
+    pub contents: String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct StringState {
     start: Location,
-    contents: String,
+    pub contents: String,
 }
 
 impl State {

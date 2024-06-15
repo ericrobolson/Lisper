@@ -8,6 +8,8 @@ pub mod tokenizer;
 pub use list::*;
 pub use location::*;
 pub use node::*;
+use parser::{ListErr, ParserErr};
+use tokenizer::{IdentifierErr, TokenErr, TokenType, TypeErr};
 
 /// Parses the given contents into a vec of lists.
 /// Will ignore comments.
@@ -28,12 +30,52 @@ fn parse_optional_path<'a>(
     let tokens = match tokenizer::Tokenizer::tokenize(contents, path) {
         Ok(tokens) => tokens,
         Err(e) => {
-            todo!()
+            let msg: String = match e.kind {
+                TokenErr::Comment(c) => match c {
+                    tokenizer::CommentErr::NotStarted => "Comment not started".into(),
+                },
+                TokenErr::String(s) => match s {
+                    tokenizer::StringErr::NotStarted => "String not started".into(),
+                    tokenizer::StringErr::Unclosed(e) => format!("Unclosed string: {}", e.contents),
+                },
+                TokenErr::Type(t) => match t {
+                    TypeErr::WrongType { got: _, expected } => {
+                        let ty = match expected {
+                            TokenType::Bool => "bool",
+                            TokenType::Comment => "comment",
+                            TokenType::Identifier => "identifier",
+                            TokenType::Number => "number",
+                            TokenType::String => "string",
+                            TokenType::Symbol => "symbol",
+                        };
+                        format!("Expected type {}", ty)
+                    }
+                },
+                TokenErr::Identifier(i) => match i {
+                    IdentifierErr::NotStarted => "Identifier not started".into(),
+                    IdentifierErr::BeginsWithNumber { got } => {
+                        format!("Identifier begins with number: {}", got)
+                    }
+                },
+                TokenErr::StackUnderflow => "Stack underflow".into(),
+            };
+            return err(&msg, &e.location);
         }
     };
     let nodes = match parser::Parser::parse(tokens) {
         Ok(nodes) => nodes,
-        Err(e) => todo!(),
+        Err(e) => {
+            let msg: String = match e.kind {
+                ParserErr::Invalid(e) => format!("Invalid: {}", e),
+                ParserErr::List(l) => match l {
+                    ListErr::UnclosedList => "Unclosed list".into(),
+                    ListErr::UnstartedList => "List not started".into(),
+                },
+                ParserErr::StackUnderflow => "Stack underflow".into(),
+            };
+
+            return err(&msg, &e.location);
+        }
     };
     let nodes = nodes
         .iter()
