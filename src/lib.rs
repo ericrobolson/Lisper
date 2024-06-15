@@ -11,22 +11,30 @@ pub use node::*;
 
 /// Parses the given contents into a vec of lists.
 /// Will ignore comments.
-pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, Error> {
+pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, String> {
     parse_optional_path(contents, None)
 }
 
 /// Parse the given contents from a file into a vec of lists.
 /// Will ignore comments.
-pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<List>, Error> {
+pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<List>, String> {
     parse_optional_path(contents, Some(path))
 }
 
 fn parse_optional_path<'a>(
     contents: &'a str,
     path: Option<std::path::PathBuf>,
-) -> Result<Vec<List>, Error> {
-    let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
-    let nodes = parser::Parser::parse(tokens)?;
+) -> Result<Vec<List>, String> {
+    let tokens = match tokenizer::Tokenizer::tokenize(contents, path) {
+        Ok(tokens) => tokens,
+        Err(e) => {
+            todo!()
+        }
+    };
+    let nodes = match parser::Parser::parse(tokens) {
+        Ok(nodes) => nodes,
+        Err(e) => todo!(),
+    };
     let nodes = nodes
         .iter()
         .filter(|n| !n.is_comment())
@@ -38,7 +46,7 @@ fn parse_optional_path<'a>(
     for node in nodes {
         match list::list(&node, "list") {
             Ok(l) => lists.push(l),
-            Err(e) => return Err(Error::Invalid(e)),
+            Err(e) => return Err(e),
         }
     }
 
@@ -64,7 +72,7 @@ fn strip_comments(node: &Node) -> Option<Node> {
 
 /// Errors that may occur during parsing.
 #[derive(Debug, Clone, PartialEq)]
-pub enum Error {
+pub(crate) enum Error {
     Invalid(String),
     Tokenizer(tokenizer::Err),
     Parser(parser::Err),

@@ -34,6 +34,69 @@ impl List {
             None => Ok(()),
         }
     }
+
+    pub fn pop_bool(&mut self, msg: &str) -> Result<(bool, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Bool(b) => Ok((*b, node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
+    pub fn pop_comment(&mut self, msg: &str) -> Result<String, String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Comment(s) => Ok(s.clone()),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
+    pub fn pop_identifier(&mut self, msg: &str) -> Result<(String, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Identifier(s) => Ok((s.clone(), node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
+    pub fn pop_list(&mut self, msg: &str) -> Result<List, String> {
+        let node = self.pop_front(&msg)?;
+        list(&node, msg)
+    }
+
+    pub fn pop_float(&mut self, msg: &str) -> Result<(f64, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Number(n) => Ok((*n, node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
+    pub fn pop_integer(&mut self, msg: &str) -> Result<(i64, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Number(n) => {
+                // If unable to cast to an int, return an error
+                if n.fract() != 0.0 {
+                    return err(
+                        &format!("Expected an int for {msg}"),
+                        &node.first_location(),
+                    );
+                }
+                Ok((*n as i64, node.first_location()))
+            }
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
+    pub fn pop_string(&mut self, msg: &str) -> Result<(String, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::String(s) => Ok((s.clone(), node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
+    }
+
     pub fn maybe_pop_bool(&mut self, msg: &str) -> Result<Option<(bool, Location)>, String> {
         let is_bool = if let Some(n) = self.peek_front() {
             match n.ast {
@@ -148,68 +211,6 @@ impl List {
             Ok(None)
         }
     }
-
-    pub fn pop_bool(&mut self, msg: &str) -> Result<(bool, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Bool(b) => Ok((*b, node.first_location())),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
-    pub fn pop_comment(&mut self, msg: &str) -> Result<String, String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Comment(s) => Ok(s.clone()),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
-    pub fn pop_identifier(&mut self, msg: &str) -> Result<(String, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Identifier(s) => Ok((s.clone(), node.first_location())),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
-    pub fn pop_list(&mut self, msg: &str) -> Result<List, String> {
-        let node = self.pop_front(&msg)?;
-        list(&node, msg)
-    }
-
-    pub fn pop_float(&mut self, msg: &str) -> Result<(f64, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Number(n) => Ok((*n, node.first_location())),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
-    pub fn pop_integer(&mut self, msg: &str) -> Result<(i64, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Number(n) => {
-                // If unable to cast to an int, return an error
-                if n.fract() != 0.0 {
-                    return err(
-                        &format!("Expected an int for {msg}"),
-                        &node.first_location(),
-                    );
-                }
-                Ok((*n as i64, node.first_location()))
-            }
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
-    pub fn pop_string(&mut self, msg: &str) -> Result<(String, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::String(s) => Ok((s.clone(), node.first_location())),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
 }
 
 pub fn list(node: &Node, msg: &str) -> Result<List, String> {
@@ -223,6 +224,7 @@ pub fn list(node: &Node, msg: &str) -> Result<List, String> {
     })
 }
 
+/// Create an error message with a location.
 pub fn err<T>(contents: &str, l: &Location) -> Result<T, String> {
     let loc_err = match &l.path {
         Some(p) => format!("{} {}:{}", p.display(), l.line, l.column + 1),

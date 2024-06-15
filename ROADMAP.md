@@ -1,3 +1,4 @@
 - [x] Refactor parsing to return List object
-- [x] Update parsing to strip out comments.
-- [ ] Add build out list popping methods + tests
+- [x] Update parsing to strip out comments
+- [ ] update error messages in parse_optional_path
+- [x] build out list popping methods + tests
