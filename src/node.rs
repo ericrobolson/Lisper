@@ -1,4 +1,4 @@
-use crate::{Location, Token};
+use crate::{tokenizer::Token, Location};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeError {

@@ -1,36 +1,57 @@
 mod error;
+mod list;
 mod location;
 mod node;
-mod parser;
-mod tokenizer;
+pub mod parser;
+pub mod tokenizer;
 
+pub use list::*;
 pub use location::*;
 pub use node::*;
-pub use tokenizer::*;
 
-/// Parses the given contents into a vec of nodes.
-pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<Node>, Error> {
-    parse_optional_path(contents, None)
-}
+pub mod parse {
+    use super::*;
 
-/// Parse the given contents from a file into a vec of nodes.
-pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<Node>, Error> {
-    parse_optional_path(contents, Some(path))
-}
+    /// Parses the given contents into a vec of nodes.
+    pub fn parse_str<'a>(contents: &'a str, ignore_comments: bool) -> Result<Vec<List>, Error> {
+        parse_optional_path(contents, "list", ignore_comments, None)
+    }
 
-fn parse_optional_path<'a>(
-    contents: &'a str,
-    path: Option<std::path::PathBuf>,
-) -> Result<Vec<Node>, Error> {
-    let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
-    let nodes = parser::Parser::parse(tokens)?;
+    /// Parse the given contents from a file into a vec of nodes.
+    pub fn parse_file<'a>(
+        contents: &'a str,
+        msg: &str,
+        ignore_comments: bool,
+        path: std::path::PathBuf,
+    ) -> Result<Vec<List>, Error> {
+        parse_optional_path(contents, msg, ignore_comments, Some(path))
+    }
 
-    Ok(nodes)
+    fn parse_optional_path<'a>(
+        contents: &'a str,
+        msg: &str,
+        ignore_comments: bool,
+        path: Option<std::path::PathBuf>,
+    ) -> Result<Vec<List>, Error> {
+        let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
+        let nodes = parser::Parser::parse(tokens)?;
+
+        let mut lists = vec![];
+        for node in nodes {
+            match list::list(&node, msg, ignore_comments) {
+                Ok(l) => lists.push(l),
+                Err(e) => return Err(Error::Invalid(e)),
+            }
+        }
+
+        Ok(lists)
+    }
 }
 
 /// Errors that may occur during parsing.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Error {
+    Invalid(String),
     Tokenizer(tokenizer::Err),
     Parser(parser::Err),
 }
@@ -39,6 +60,7 @@ impl ToString for Error {
         match self {
             Self::Tokenizer(err) => err.clone().to_string(),
             Self::Parser(err) => err.clone().to_string(),
+            Self::Invalid(msg) => msg.clone(),
         }
     }
 }

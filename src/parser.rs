@@ -8,6 +8,7 @@ pub type Err = error::Error<ParserErr>;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParserErr {
+    Invalid(String),
     List(ListErr),
     StackUnderflow,
 }
@@ -16,6 +17,7 @@ impl ToString for ParserErr {
         match self {
             Self::List(list_err) => list_err.to_string(),
             Self::StackUnderflow => "Stack underflow".into(),
+            Self::Invalid(err) => format!("Unhandled error: {err}"),
         }
     }
 }
