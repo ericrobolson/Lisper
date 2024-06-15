@@ -1,2 +1,3 @@
 - [x] Refactor parsing to return List object
+- [x] Update parsing to strip out comments.
 - [ ] Add build out list popping methods + tests

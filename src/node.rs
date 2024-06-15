@@ -60,6 +60,13 @@ impl Node {
         }
     }
 
+    pub fn is_comment(&self) -> bool {
+        match &self.ast {
+            Ast::Comment(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn assert_length(&self, expected: usize) -> Result<(), NodeError> {
         let l = self.as_list()?;
         if l.len() != expected {

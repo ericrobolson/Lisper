@@ -9,43 +9,57 @@ pub use list::*;
 pub use location::*;
 pub use node::*;
 
-pub mod parse {
-    use super::*;
+/// Parses the given contents into a vec of lists.
+/// Will ignore comments.
+pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, Error> {
+    parse_optional_path(contents, None)
+}
 
-    /// Parses the given contents into a vec of nodes.
-    pub fn parse_str<'a>(contents: &'a str, ignore_comments: bool) -> Result<Vec<List>, Error> {
-        parse_optional_path(contents, "list", ignore_comments, None)
+/// Parse the given contents from a file into a vec of lists.
+/// Will ignore comments.
+pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<List>, Error> {
+    parse_optional_path(contents, Some(path))
+}
+
+fn parse_optional_path<'a>(
+    contents: &'a str,
+    path: Option<std::path::PathBuf>,
+) -> Result<Vec<List>, Error> {
+    let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
+    let nodes = parser::Parser::parse(tokens)?;
+    let nodes = nodes
+        .iter()
+        .filter(|n| !n.is_comment())
+        .map(|n| strip_comments(n))
+        .filter_map(|n| n)
+        .collect::<Vec<_>>();
+
+    let mut lists = vec![];
+    for node in nodes {
+        match list::list(&node, "list") {
+            Ok(l) => lists.push(l),
+            Err(e) => return Err(Error::Invalid(e)),
+        }
     }
 
-    /// Parse the given contents from a file into a vec of nodes.
-    pub fn parse_file<'a>(
-        contents: &'a str,
-        msg: &str,
-        ignore_comments: bool,
-        path: std::path::PathBuf,
-    ) -> Result<Vec<List>, Error> {
-        parse_optional_path(contents, msg, ignore_comments, Some(path))
-    }
+    Ok(lists)
+}
 
-    fn parse_optional_path<'a>(
-        contents: &'a str,
-        msg: &str,
-        ignore_comments: bool,
-        path: Option<std::path::PathBuf>,
-    ) -> Result<Vec<List>, Error> {
-        let tokens = tokenizer::Tokenizer::tokenize(contents, path)?;
-        let nodes = parser::Parser::parse(tokens)?;
+fn strip_comments(node: &Node) -> Option<Node> {
+    let node = match &node.ast {
+        Ast::Comment(_) => return None,
+        Ast::List(nodes) => {
+            let nodes = nodes.iter().filter_map(|n| strip_comments(n)).collect();
 
-        let mut lists = vec![];
-        for node in nodes {
-            match list::list(&node, msg, ignore_comments) {
-                Ok(l) => lists.push(l),
-                Err(e) => return Err(Error::Invalid(e)),
+            Node {
+                ast: Ast::List(nodes),
+                tokens: node.tokens.clone(),
             }
         }
+        Ast::Identifier(_) | Ast::Number(_) | Ast::String(_) | Ast::Bool(_) => node.clone(),
+    };
 
-        Ok(lists)
-    }
+    Some(node)
 }
 
 /// Errors that may occur during parsing.

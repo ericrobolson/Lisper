@@ -3,7 +3,6 @@ use crate::{Ast, Location, Node};
 #[derive(Debug)]
 pub struct List {
     nodes: Vec<Node>,
-    ignore_comments: bool,
     location: Location,
 }
 impl List {
@@ -11,15 +10,19 @@ impl List {
         if self.nodes.is_empty() {
             None
         } else {
-            for (i, node) in self.nodes.iter().enumerate() {
-                match node.ast {
-                    Ast::Comment(_) => continue,
-                    _ => return Some(&self.nodes[i]),
-                }
-            }
-
-            return None;
+            Some(&self.nodes[0])
         }
+    }
+
+    pub fn pop_front(&mut self, msg: &str) -> Result<Node, String> {
+        match self.nodes.is_empty() {
+            true => err(&format!("Expected {msg}"), &self.location),
+            false => Ok(self.nodes.remove(0)),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.nodes.is_empty()
     }
 
     pub fn assert_empty(&self, msg: &str) -> Result<(), String> {
@@ -29,6 +32,104 @@ impl List {
                 &n.first_location(),
             ),
             None => Ok(()),
+        }
+    }
+    pub fn maybe_pop_bool(&mut self, msg: &str) -> Result<Option<(bool, Location)>, String> {
+        let is_bool = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Bool(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_bool {
+            Ok(Some(self.pop_bool(msg)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn maybe_pop_comment(&mut self, msg: &str) -> Result<Option<String>, String> {
+        let is_comment = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Comment(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_comment {
+            Ok(Some(self.pop_comment(msg)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn maybe_pop_identifier(
+        &mut self,
+        msg: &str,
+    ) -> Result<Option<(String, Location)>, String> {
+        let is_identifier = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Identifier(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_identifier {
+            Ok(Some(self.pop_identifier(msg)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn maybe_pop_list(&mut self, msg: &str) -> Result<Option<List>, String> {
+        let is_list = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::List(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_list {
+            Ok(Some(self.pop_list(msg)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn maybe_pop_float(&mut self, msg: &str) -> Result<Option<(f64, Location)>, String> {
+        let is_float = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Number(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_float {
+            Ok(Some(self.pop_float(msg)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn maybe_pop_integer(&mut self, msg: &str) -> Result<Option<(i64, Location)>, String> {
+        let is_integer = if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Number(f) => f.fract() == 0.0,
+                _ => false,
+            }
+        } else {
+            false
+        };
+        if is_integer {
+            Ok(Some(self.pop_integer(msg)?))
+        } else {
+            Ok(None)
         }
     }
 
@@ -48,34 +149,41 @@ impl List {
         }
     }
 
-    pub fn pop_front_absolute(&mut self, msg: &str) -> Result<Node, String> {
-        match self.nodes.is_empty() {
-            true => err(&format!("Expected {msg}"), &self.location),
-            false => Ok(self.nodes.remove(0)),
+    pub fn pop_bool(&mut self, msg: &str) -> Result<(bool, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Bool(b) => Ok((*b, node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
         }
     }
 
-    pub fn pop_front(&mut self, msg: &str) -> Result<Node, String> {
-        match self.nodes.is_empty() {
-            true => err(&format!("Expected {msg}"), &self.location),
-            false => {
-                // Skip comments
-                let node = self.nodes.remove(0);
-                match &node.ast {
-                    Ast::Comment(_) => self.pop_front(msg),
-                    _ => Ok(node),
-                }
-            }
+    pub fn pop_comment(&mut self, msg: &str) -> Result<String, String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Comment(s) => Ok(s.clone()),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
         }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.nodes.is_empty()
+    pub fn pop_identifier(&mut self, msg: &str) -> Result<(String, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Identifier(s) => Ok((s.clone(), node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
     }
 
     pub fn pop_list(&mut self, msg: &str) -> Result<List, String> {
         let node = self.pop_front(&msg)?;
-        list(&node, msg, self.ignore_comments)
+        list(&node, msg)
+    }
+
+    pub fn pop_float(&mut self, msg: &str) -> Result<(f64, Location), String> {
+        let node = self.pop_front(&msg)?;
+        match &node.ast {
+            Ast::Number(n) => Ok((*n, node.first_location())),
+            _ => err(&format!("Expected {msg}"), &node.first_location()),
+        }
     }
 
     pub fn pop_integer(&mut self, msg: &str) -> Result<(i64, Location), String> {
@@ -95,14 +203,6 @@ impl List {
         }
     }
 
-    pub fn pop_identifier(&mut self, msg: &str) -> Result<(String, Location), String> {
-        let node = self.pop_front(&msg)?;
-        match &node.ast {
-            Ast::Identifier(s) => Ok((s.clone(), node.first_location())),
-            _ => err(&format!("Expected {msg}"), &node.first_location()),
-        }
-    }
-
     pub fn pop_string(&mut self, msg: &str) -> Result<(String, Location), String> {
         let node = self.pop_front(&msg)?;
         match &node.ast {
@@ -112,13 +212,12 @@ impl List {
     }
 }
 
-pub fn list(node: &Node, msg: &str, ignore_comments: bool) -> Result<List, String> {
+pub fn list(node: &Node, msg: &str) -> Result<List, String> {
     let l = match &node.ast {
         Ast::List(l) => l.clone(),
         _ => return err(&format!("Expected {msg}"), &node.first_location()),
     };
     Ok(List {
-        ignore_comments,
         nodes: l,
         location: node.first_location(),
     })
