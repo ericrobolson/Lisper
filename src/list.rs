@@ -1,6 +1,6 @@
 use crate::{Ast, Location, Node};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct List {
     nodes: Vec<Node>,
     location: Location,
