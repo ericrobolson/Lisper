@@ -20,6 +20,7 @@ lisper = { git = "https://github.com/ericrobolson/Lisper.git" }
 let contents = "(def (add-multiply a b c)
     (* c (+ a b)))";
 
-let nodes = lisper::parse_str(contents)?;
-let nodes = lisper::parse_file(contents, path)?;
+// let nodes = lisper::parse_file(contents, path)?;
+let mut nodes = lisper::parse_str(contents)?;
+let id = nodes[0].pop_identifier("identifier").unwrap();
 ```
