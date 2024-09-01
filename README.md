@@ -4,7 +4,16 @@
 - Meant to be embedded
 - Not a scripting language but can easily be used to build one
 
-# Example Usage
+## Installation
+
+Add to your `Cargo.toml` file dependencies:
+
+```toml
+[dependencies]
+lisper = { git = "https://github.com/ericrobolson/Lisper.git" }
+```
+
+## Example Usage
 
 ```
 
