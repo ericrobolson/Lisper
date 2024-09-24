@@ -11,7 +11,7 @@ pub use node::*;
 use parser::{ListErr, ParserErr};
 use tokenizer::{IdentifierErr, TokenErr, TokenType, TypeErr};
 
-#[cfg(target_feature = "load_directory")]
+#[cfg(feature = "load_directory")]
 pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, String> {
     if !location.is_dir() {
         return Err(format!("Location '{:?}' is not a directory", location));
