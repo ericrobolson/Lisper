@@ -11,6 +11,42 @@ pub use node::*;
 use parser::{ListErr, ParserErr};
 use tokenizer::{IdentifierErr, TokenErr, TokenType, TypeErr};
 
+#[cfg(target_feature = "load_directory")]
+pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, String> {
+    if !location.is_dir() {
+        return Err(format!("Location '{:?}' is not a directory", location));
+    }
+
+    let mut files = vec![];
+    // Use walkdir and traverse directory recursively, getting all files with the extension
+    for entry in walkdir::WalkDir::new(location) {
+        let entry = entry.unwrap();
+        if entry.path().is_file() {
+            if let Some(ext) = entry.path().extension() {
+                if ext == extension {
+                    files.push(entry.path().to_path_buf());
+                }
+            }
+        }
+    }
+
+    // Now read each file and parse it
+    let mut lists = vec![];
+    for file in files {
+        let contents = match std::fs::read_to_string(&file) {
+            Ok(contents) => contents,
+            Err(e) => return Err(format!("Error reading file '{:?}': {}", file, e)),
+        };
+
+        match parse_file(&contents, file) {
+            Ok(mut l) => lists.append(&mut l),
+            Err(e) => return Err(e),
+        }
+    }
+
+    Ok(lists)
+}
+
 /// Parses the given contents into a vec of lists.
 /// Will ignore comments.
 pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, String> {

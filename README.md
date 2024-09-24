@@ -13,10 +13,17 @@ Add to your `Cargo.toml` file dependencies:
 lisper = { git = "https://github.com/ericrobolson/Lisper.git" }
 ```
 
+There is a `load_directory` feature that enables loading all files from a directory. To enable this feature, add the following to your `Cargo.toml` file:
+
+```toml
+
+[dependencies]
+lisper = { git = "https://github.com/ericrobolson/Lisper.git", features=["load_directory"] }
+```
+
 ## Example Usage
 
 ```
-
 let contents = "(def (add-multiply a b c)
     (* c (+ a b)))";
 

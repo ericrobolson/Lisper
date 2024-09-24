@@ -3,5 +3,9 @@ name = "lisper"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+load_directory = ["walkdir"]
 
 [dependencies]
+walkdir = { version = "2.5.0", optional = true }
