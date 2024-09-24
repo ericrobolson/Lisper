@@ -6,6 +6,10 @@ pub struct List {
     location: Location,
 }
 impl List {
+    pub fn location(&self) -> Location {
+        self.location.clone()
+    }
+
     pub fn peek_front(&self) -> Option<&Node> {
         if self.nodes.is_empty() {
             None
