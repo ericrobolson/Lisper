@@ -34,6 +34,14 @@ impl From<String> for Error {
         }
     }
 }
+impl From<&str> for Error {
+    fn from(message: &str) -> Self {
+        Self {
+            message: message.to_string(),
+            location: Location::default(),
+        }
+    }
+}
 
 #[cfg(feature = "load_directory")]
 pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, Error> {
