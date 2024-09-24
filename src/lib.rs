@@ -26,11 +26,19 @@ impl PartialEq for Error {
         self.message == other.message
     }
 }
+impl From<String> for Error {
+    fn from(message: String) -> Self {
+        Self {
+            message,
+            location: Location::default(),
+        }
+    }
+}
 
 #[cfg(feature = "load_directory")]
-pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, String> {
+pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, Error> {
     if !location.is_dir() {
-        return Err(format!("Location '{:?}' is not a directory", location));
+        return Err(format!("Location '{:?}' is not a directory", location).into());
     }
 
     let mut files = vec![];
@@ -51,7 +59,7 @@ pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<V
     for file in files {
         let contents = match std::fs::read_to_string(&file) {
             Ok(contents) => contents,
-            Err(e) => return Err(format!("Error reading file '{:?}': {}", file, e)),
+            Err(e) => return Err(format!("Error reading file '{:?}': {}", file, e).into()),
         };
 
         match parse_file(&contents, file) {
@@ -162,33 +170,4 @@ fn strip_comments(node: &Node) -> Option<Node> {
     };
 
     Some(node)
-}
-
-/// Errors that may occur during parsing.
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) enum CrateErr {
-    Invalid(String),
-    Tokenizer(tokenizer::Err),
-    Parser(parser::Err),
-}
-impl ToString for CrateErr {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Tokenizer(err) => err.clone().to_string(),
-            Self::Parser(err) => err.clone().to_string(),
-            Self::Invalid(msg) => msg.clone(),
-        }
-    }
-}
-
-impl From<parser::Err> for CrateErr {
-    fn from(err: parser::Err) -> Self {
-        Self::Parser(err)
-    }
-}
-
-impl From<tokenizer::Err> for CrateErr {
-    fn from(err: tokenizer::Err) -> Self {
-        Self::Tokenizer(err)
-    }
 }
