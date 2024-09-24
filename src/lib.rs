@@ -26,6 +26,24 @@ impl PartialEq for Error {
         self.message == other.message
     }
 }
+impl Into<String> for Error {
+    fn into(self) -> String {
+        if let Some(path) = self.location.path {
+            format!(
+                "{}:{}:{}: {}",
+                path.display(),
+                self.location.line,
+                self.location.column,
+                self.message
+            )
+        } else {
+            format!(
+                "{}:{}: {}",
+                self.location.line, self.location.column, self.message
+            )
+        }
+    }
+}
 impl From<String> for Error {
     fn from(message: String) -> Self {
         Self {
