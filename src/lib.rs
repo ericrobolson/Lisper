@@ -11,6 +11,22 @@ pub use node::*;
 use parser::{ListErr, ParserErr};
 use tokenizer::{IdentifierErr, TokenErr, TokenType, TypeErr};
 
+#[derive(Debug, Clone)]
+pub struct Error {
+    pub message: String,
+    pub location: Location,
+}
+impl Error {
+    pub fn new(message: String, location: Location) -> Self {
+        Self { message, location }
+    }
+}
+impl PartialEq for Error {
+    fn eq(&self, other: &Self) -> bool {
+        self.message == other.message
+    }
+}
+
 #[cfg(feature = "load_directory")]
 pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<Vec<List>, String> {
     if !location.is_dir() {
@@ -49,20 +65,20 @@ pub fn load_directory(extension: &str, location: std::path::PathBuf) -> Result<V
 
 /// Parses the given contents into a vec of lists.
 /// Will ignore comments.
-pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, String> {
+pub fn parse_str<'a>(contents: &'a str) -> Result<Vec<List>, Error> {
     parse_optional_path(contents, None)
 }
 
 /// Parse the given contents from a file into a vec of lists.
 /// Will ignore comments.
-pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<List>, String> {
+pub fn parse_file<'a>(contents: &'a str, path: std::path::PathBuf) -> Result<Vec<List>, Error> {
     parse_optional_path(contents, Some(path))
 }
 
 fn parse_optional_path<'a>(
     contents: &'a str,
     path: Option<std::path::PathBuf>,
-) -> Result<Vec<List>, String> {
+) -> Result<Vec<List>, Error> {
     let tokens = match tokenizer::Tokenizer::tokenize(contents, path) {
         Ok(tokens) => tokens,
         Err(e) => {
@@ -150,12 +166,12 @@ fn strip_comments(node: &Node) -> Option<Node> {
 
 /// Errors that may occur during parsing.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Error {
+pub(crate) enum CrateErr {
     Invalid(String),
     Tokenizer(tokenizer::Err),
     Parser(parser::Err),
 }
-impl ToString for Error {
+impl ToString for CrateErr {
     fn to_string(&self) -> String {
         match self {
             Self::Tokenizer(err) => err.clone().to_string(),
@@ -165,13 +181,13 @@ impl ToString for Error {
     }
 }
 
-impl From<parser::Err> for Error {
+impl From<parser::Err> for CrateErr {
     fn from(err: parser::Err) -> Self {
         Self::Parser(err)
     }
 }
 
-impl From<tokenizer::Err> for Error {
+impl From<tokenizer::Err> for CrateErr {
     fn from(err: tokenizer::Err) -> Self {
         Self::Tokenizer(err)
     }
