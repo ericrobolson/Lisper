@@ -51,6 +51,49 @@ pub struct Node {
     pub ast: Ast,
     pub tokens: Vec<Token>,
 }
+impl std::fmt::Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut buff = String::new();
+        match &self.ast {
+            Ast::Bool(value) => {
+                if *value {
+                    buff.push_str("true");
+                } else {
+                    buff.push_str("false");
+                }
+            }
+            Ast::Comment(comment) => {
+                buff.push_str(";");
+                buff.push_str(comment);
+                buff.push_str("\n");
+            }
+            Ast::Identifier(id) => {
+                buff.push_str(id);
+            }
+            Ast::List(vec) => {
+                buff.push_str("(");
+                for (i, node) in vec.iter().enumerate() {
+                    if i != 0 {
+                        buff.push_str(" ");
+                    }
+                    buff.push_str(&node.to_string());
+                }
+                buff.push_str(")");
+            }
+            Ast::Number(n) => {
+                buff.push_str(&n.to_string());
+            }
+            Ast::String(str) => {
+                buff.push_str("\"");
+                buff.push_str(str);
+                buff.push_str("\"");
+            }
+        }
+
+        write!(f, "{}", buff)
+    }
+}
+
 impl Node {
     pub fn first_location(&self) -> Location {
         if self.tokens.is_empty() {

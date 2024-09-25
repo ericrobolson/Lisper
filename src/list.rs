@@ -5,6 +5,20 @@ pub struct List {
     nodes: Vec<Node>,
     location: Location,
 }
+
+impl std::fmt::Display for List {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let contents = self
+            .nodes
+            .iter()
+            .map(|node| format!("{}", node))
+            .collect::<Vec<String>>()
+            .join(" ");
+
+        write!(f, "({})", contents)
+    }
+}
+
 impl List {
     pub fn location(&self) -> Location {
         self.location.clone()
@@ -231,4 +245,39 @@ pub fn err<T>(contents: &str, l: &Location) -> Result<T, Error> {
         message: contents.to_string(),
         location: l.clone(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn display_list_empty() {
+        let contents = "()";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        assert_eq!(format!("{}", list), "()");
+    }
+
+    #[test]
+    fn display_list_flat() {
+        let contents = "(+ 1 2)";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        assert_eq!(format!("{}", list), "(+ 1 2)");
+    }
+
+    #[test]
+    fn display_list_nested() {
+        let contents = "(+ 1 (* 2 3))";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        assert_eq!(format!("{}", list), "(+ 1 (* 2 3))");
+    }
+
+    #[test]
+    fn display_list_comment() {
+        let contents = "; Hello!\n(+ 1 (* 2 3))";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        assert_eq!(format!("{}", list), "(+ 1 (* 2 3))");
+    }
 }
