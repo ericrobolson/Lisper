@@ -43,6 +43,17 @@ impl List {
         }
     }
 
+    pub fn front_is_identifier(&self) -> bool {
+        if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Identifier(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
     pub fn pop_front(&mut self, msg: &str) -> Result<Node, Error> {
         match self.nodes.is_empty() {
             true => err(&format!("Expected {msg}"), &self.location),
