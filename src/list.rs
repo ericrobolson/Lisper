@@ -54,6 +54,50 @@ impl List {
         }
     }
 
+    pub fn front_is_bool(&self) -> bool {
+        if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Bool(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn front_is_int(&self) -> bool {
+        if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Number(n) => n.fract() == 0.0,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn front_is_float(&self) -> bool {
+        if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::Number(n) => true,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn front_is_string(&self) -> bool {
+        if let Some(n) = self.peek_front() {
+            match n.ast {
+                Ast::String(_) => true,
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
     pub fn pop_front(&mut self, msg: &str) -> Result<Node, Error> {
         match self.nodes.is_empty() {
             true => err(&format!("Expected {msg}"), &self.location),
