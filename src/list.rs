@@ -292,6 +292,15 @@ impl List {
             Ok(None)
         }
     }
+
+    /// Asserts that the next node is an identifier with the given value.
+    pub fn assert_identifier(&mut self, id: &str, msg: &str) -> Result<(), Error> {
+        let (identifer_value, loc) = self.pop_identifier(msg)?;
+        if identifer_value != id {
+            return err(&format!("Expected {id}"), &loc);
+        }
+        Ok(())
+    }
 }
 
 pub fn list(node: &Node, msg: &str) -> Result<List, Error> {
@@ -345,5 +354,24 @@ mod tests {
         let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
 
         assert_eq!(format!("{}", list), "(+ 1 (* 2 3))");
+    }
+
+    #[test]
+    fn assert_identifier_returns_err_on_mismatch() {
+        let contents = "(1 (* 2 3))";
+        let mut list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        let result = list.assert_identifier("+", "identifier");
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap().message, "Expected identifier");
+    }
+
+    #[test]
+    fn assert_identifier_returns_ok_on_match() {
+        let contents = "(+ 1 (* 2 3))";
+        let mut list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        let result = list.assert_identifier("+", "identifier");
+        assert!(result.is_ok());
     }
 }
