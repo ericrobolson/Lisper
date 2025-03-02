@@ -20,6 +20,10 @@ impl std::fmt::Display for List {
 }
 
 impl List {
+    pub fn len(&self) -> usize {
+        self.nodes.len()
+    }
+
     pub fn location(&self) -> Location {
         self.location.clone()
     }
