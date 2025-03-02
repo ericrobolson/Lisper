@@ -36,6 +36,17 @@ impl List {
         }
     }
 
+    pub fn peek_identifier(&self) -> Option<&str> {
+        if let Some(n) = self.peek_front() {
+            match &n.ast {
+                Ast::Identifier(id) => Some(id),
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+
     pub fn front_is_list(&self) -> bool {
         if let Some(n) = self.peek_front() {
             match n.ast {
@@ -377,5 +388,24 @@ mod tests {
 
         let result = list.assert_identifier("+", "identifier");
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn peek_identifier_returns_none_on_non_identifier() {
+        let contents = "(1 (* 2 3))";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        let result = list.peek_identifier();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn peek_identifier_returns_identifier_on_match() {
+        let contents = "(+ 1 (* 2 3))";
+        let list = crate::parse_str(contents).unwrap().first().unwrap().clone();
+
+        let result = list.peek_identifier();
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), "+");
     }
 }
